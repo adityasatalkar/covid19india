@@ -68,6 +68,7 @@ public class Main {
 			System.out.println("State " + stateWiseObject.getState());
 			System.out.println(CONFIRMED + " " + stateWiseObject.getConfirmed());
 			System.out.println(HOSPITALIZED + " " + stateWiseObject.getActive());
+			System.out.println(RECOVERED + " " + stateWiseObject.getRecovered());
 			System.out.println(DECEASED + " " + stateWiseObject.getDeaths());
 		}
 
