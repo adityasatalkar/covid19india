@@ -1,4 +1,4 @@
-package com.districtwise;
+package process_data;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -61,6 +61,9 @@ public class RawDatum {
 	@SerializedName("statuschangedate")
 	@Expose
 	private String statuschangedate;
+	@SerializedName("typeoftransmission")
+	@Expose
+	private String typeoftransmission;
 
 	public String getAgebracket() {
 		return agebracket;
@@ -206,6 +209,14 @@ public class RawDatum {
 		this.statuschangedate = statuschangedate;
 	}
 
+	public String getTypeoftransmission() {
+		return typeoftransmission;
+	}
+
+	public void setTypeoftransmission(String typeoftransmission) {
+		this.typeoftransmission = typeoftransmission;
+	}
+
 	public static Comparator<RawDatum> StateNameComparatorAscendingOrder = new Comparator<RawDatum>() {
 
 		public int compare(RawDatum rawDatum1, RawDatum rawDatum2) {
@@ -216,16 +227,4 @@ public class RawDatum {
 			return rawDatum1Detectedstate.compareTo(rawDatum2Detectedstate);
 		}
 	};
-
-	public static Comparator<RawDatum> StateNameComparatorDescendingOrder = new Comparator<RawDatum>() {
-
-		public int compare(RawDatum rawDatum1, RawDatum rawDatum2) {
-			String rawDatum1Detectedstate = rawDatum1.getDetectedstate();
-			String rawDatum2Detectedstate = rawDatum2.getDetectedstate();
-
-			//descending order
-			return rawDatum2Detectedstate.compareTo(rawDatum1Detectedstate);
-		}
-	};
-
 }
