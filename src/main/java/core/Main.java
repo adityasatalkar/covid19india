@@ -7,10 +7,7 @@ import com.google.gson.GsonBuilder;
 import process_data.RawData;
 import process_data.RawDatum;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class Main {
 
@@ -90,18 +87,19 @@ public class Main {
 			System.out.println(RECOVERED + " " + stateWiseObject.getRecovered());
 			System.out.println(DECEASED + " " + stateWiseObject.getDeaths());
 
-			if (!stateWiseObject.getState().equalsIgnoreCase("Total")) {
-				System.out.println();
-				System.out.println("District Wise");
-			}
-
 			int count = 0;
 			if (stateNamesHashMap.containsKey(stateWiseObject.getState())) {
+
 				List<String> districtNamesList = stateNamesHashMap.get(stateWiseObject.getState());
-				for (String districtName: districtNamesList) {
-					if (districtNamesHashMap.containsKey(districtName)) {
-						count +=  districtNamesHashMap.get(districtName);
-						System.out.println(districtName + " " + districtNamesHashMap.get(districtName));
+				if (!districtNamesList.isEmpty()) {
+					System.out.println();
+					System.out.println("District Wise");
+					HashMap<String, Integer> currentStateDistrictsHashMap = sortByValue(populateLocalHashMap(districtNamesList));
+					for (Map.Entry<String,Integer> map: currentStateDistrictsHashMap.entrySet()) {
+						String districtName = map.getKey();
+						int value = map.getValue();
+						count += value;
+						System.out.println(districtName + " " + value);
 					}
 				}
 			}
@@ -112,6 +110,38 @@ public class Main {
 			}
 		}
 		return data;
+	}
+
+	public static HashMap<String, Integer> populateLocalHashMap(List<String> districtNamesList) {
+		HashMap<String, Integer> hashMap = new HashMap();
+		for (int i = 0; i < districtNamesList.size(); i++) {
+			if (!districtNamesList.get(i).isEmpty()) {
+				hashMap.put(districtNamesList.get(i), districtNamesHashMap.get(districtNamesList.get(i)));
+			}
+		}
+		return hashMap;
+	}
+
+	public static HashMap<String, Integer> sortByValue(HashMap<String, Integer> hashMap) {
+		// Create a list from elements of HashMap
+		List<Map.Entry<String, Integer> > list =
+				new LinkedList<Map.Entry<String, Integer> >(hashMap.entrySet());
+
+		// Sort the list in descending order based on values
+		Collections.sort(list, new Comparator<Map.Entry<String, Integer> >() {
+			public int compare(Map.Entry<String, Integer> o1,
+							   Map.Entry<String, Integer> o2)
+			{
+				return (o2.getValue()).compareTo(o1.getValue());
+			}
+		});
+
+		// put data from sorted list to hashmap
+		HashMap<String, Integer> temp = new LinkedHashMap<String, Integer>();
+		for (Map.Entry<String, Integer> aa : list) {
+			temp.put(aa.getKey(), aa.getValue());
+		}
+		return temp;
 	}
 
 	public static void main(String[] args) throws Exception {
