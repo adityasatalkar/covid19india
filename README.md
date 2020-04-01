@@ -37,7 +37,7 @@ This will build the BIG FAT JAR that we'll use to run the program
 ```
 Command :
 
-java -jar java -jar target/covid19india-1.0-jar-with-dependencies.jar
+java -jar target/covid19india-1.0-jar-with-dependencies.jar
 
 ```
 
