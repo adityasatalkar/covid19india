@@ -1,4 +1,4 @@
-package com.districtwise;
+package process_data;
 
 import java.util.List;
 import com.google.gson.annotations.Expose;

@@ -2,26 +2,25 @@ package core;
 
 import api.Data;
 import api.Statewise;
-import com.districtwise.DistrictWise;
-import com.districtwise.RawData;
-import com.districtwise.RawDatum;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import process_data.RawData;
+import process_data.RawDatum;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 public class Main {
 
-	public static int DECEASED_COUNT = 0;
-	public static int RECOVERED_COUNT = 0;
-	public static int ACTIVE_COUNT = 0;
-	public static int CONFIRMED_COUNT = 0;
+	static final String HOSPITALIZED = "Hospitalized";
+	static final String RECOVERED = "Recovered";
+	static final String DECEASED = "Deceased";
+	static final String CONFIRMED = "Confirmed";
 
-	public static final String HOSPITALIZED = "Hospitalized";
-	public static final String RECOVERED = "Recovered";
-	public static final String DECEASED = "Deceased";
-	public static final String CONFIRMED = "Confirmed";
+	static HashMap<String, List<String>> stateNamesHashMap = new HashMap<>();
+	static HashMap<String, Integer> districtNamesHashMap = new HashMap<>();
 
 	public static void getRawData() throws Exception {
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -34,27 +33,47 @@ public class Main {
 
 		Collections.sort(rawDatumList, RawDatum.StateNameComparatorAscendingOrder);
 
-		for (RawDatum rawDatumObject: rawDatumList) {
-			if (rawDatumObject.getCurrentstatus().equalsIgnoreCase(HOSPITALIZED)) {
-				ACTIVE_COUNT++;
+		for (int i = 0; i < rawDatumList.size(); i++) {
+			if (stateNamesHashMap.containsKey(rawDatumList.get(i).getDetectedstate())) {
+				List<String> districtNames = stateNamesHashMap.get(rawDatumList.get(i).getDetectedstate());
+				if (!districtNames.contains(rawDatumList.get(i).getDetecteddistrict())) {
+					districtNames.add(rawDatumList.get(i).getDetecteddistrict());
+				}
 			}
-			if (rawDatumObject.getCurrentstatus().equalsIgnoreCase(RECOVERED)) {
-				RECOVERED_COUNT++;
-			}
-			if (rawDatumObject.getCurrentstatus().equalsIgnoreCase(DECEASED)) {
-				DECEASED_COUNT++;
+			else {
+				List<String> list = new ArrayList<>();
+				if (rawDatumList.get(i).getDetectedstate().equalsIgnoreCase("")) {
+					stateNamesHashMap.put("Unknown", list);
+				}
+				stateNamesHashMap.put(rawDatumList.get(i).getDetectedstate(), list);
 			}
 		}
 
-		CONFIRMED_COUNT = ACTIVE_COUNT + RECOVERED_COUNT + DECEASED_COUNT;
+		for (int i = 0; i < rawDatumList.size(); i++) {
 
-		System.out.println(CONFIRMED + " " + CONFIRMED_COUNT);
-		System.out.println(HOSPITALIZED + " " + ACTIVE_COUNT);
-		System.out.println(RECOVERED + " " + RECOVERED_COUNT);
-		System.out.println(DECEASED + " " + DECEASED_COUNT);
+			if (!districtNamesHashMap.containsKey(rawDatumList.get(i).getDetecteddistrict())) {
+				if (rawDatumList.get(i).getDetecteddistrict().isEmpty()) {
+					districtNamesHashMap.put(rawDatumList.get(i).getDetectedstate() + "Unknown", 1);
+				}
+				else {
+					districtNamesHashMap.put(rawDatumList.get(i).getDetecteddistrict(), 1);
+				}
+			}
+			else {
+				int count;
+				if (rawDatumList.get(i).getDetecteddistrict().isEmpty()) {
+					count = districtNamesHashMap.get(rawDatumList.get(i).getDetectedstate() + "Unknown");
+					districtNamesHashMap.put(rawDatumList.get(i).getDetectedstate() + "Unknown", ++count);
+				}
+				else {
+					count = districtNamesHashMap.get(rawDatumList.get(i).getDetecteddistrict());
+					districtNamesHashMap.put(rawDatumList.get(i).getDetecteddistrict(), ++count);
+				}
+			}
+		}
 	}
 
-	public static void getData() throws Exception {
+	public static Data getData() throws Exception {
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 		String jsonString = ApiCall.getDataFromApi(ApiCall.DATA_URL);
@@ -70,21 +89,33 @@ public class Main {
 			System.out.println(HOSPITALIZED + " " + stateWiseObject.getActive());
 			System.out.println(RECOVERED + " " + stateWiseObject.getRecovered());
 			System.out.println(DECEASED + " " + stateWiseObject.getDeaths());
+
+			if (!stateWiseObject.getState().equalsIgnoreCase("Total")) {
+				System.out.println();
+				System.out.println("District Wise");
+			}
+
+			int count = 0;
+			if (stateNamesHashMap.containsKey(stateWiseObject.getState())) {
+				List<String> districtNamesList = stateNamesHashMap.get(stateWiseObject.getState());
+				for (String districtName: districtNamesList) {
+					if (districtNamesHashMap.containsKey(districtName)) {
+						count +=  districtNamesHashMap.get(districtName);
+						System.out.println(districtName + " " + districtNamesHashMap.get(districtName));
+					}
+				}
+			}
+			if (count != Integer.parseInt(stateWiseObject.getConfirmed()) && !stateWiseObject.getState().equalsIgnoreCase("Total")) {
+				int unknown = Integer.parseInt(stateWiseObject.getConfirmed()) - count;
+				districtNamesHashMap.put(stateWiseObject.getState() + "Unknown", unknown);
+				System.out.println("Unknown" + " " + unknown);
+			}
 		}
-
-	}
-
-	public static void getDistrictWise() throws Exception {
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-		String jsonString = ApiCall.getDataFromApi(ApiCall.STATE_DISTRICT_WISE_URL);
-
-		DistrictWise districtWise = gson.fromJson(jsonString, DistrictWise.class);
-
-		System.out.println(districtWise.getMaharashtra().getDistrictData().getPune().getActive());
+		return data;
 	}
 
 	public static void main(String[] args) throws Exception {
+		getRawData();
 		getData();
 	}
 }
