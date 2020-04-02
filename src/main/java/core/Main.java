@@ -4,6 +4,8 @@ import api.Data;
 import api.Statewise;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import process_data.DistrictDatum;
+import process_data.DistrictWise;
 import process_data.RawData;
 import process_data.RawDatum;
 
@@ -78,8 +80,14 @@ public class Main {
 		Data data = gson.fromJson(jsonString, Data.class);
 
 		List<Statewise> statewiseList = data.getStatewise();
+		List<DistrictWise> districtWiseList = new ArrayList<>();
+
 
 		for (Statewise stateWiseObject: statewiseList) {
+
+			DistrictWise districtWiseObject = new DistrictWise();
+			districtWiseObject.setState(stateWiseObject.getState());
+
 			System.out.println("*********");
 			System.out.println("State " + stateWiseObject.getState());
 			System.out.println(CONFIRMED + " " + stateWiseObject.getConfirmed());
@@ -87,8 +95,10 @@ public class Main {
 			System.out.println(RECOVERED + " " + stateWiseObject.getRecovered());
 			System.out.println(DECEASED + " " + stateWiseObject.getDeaths());
 
+			List<DistrictDatum> districtDatumList = new ArrayList<>();
 			int count = 0;
 			if (stateNamesHashMap.containsKey(stateWiseObject.getState())) {
+
 
 				List<String> districtNamesList = stateNamesHashMap.get(stateWiseObject.getState());
 				if (!districtNamesList.isEmpty()) {
@@ -98,17 +108,32 @@ public class Main {
 					for (Map.Entry<String,Integer> map: currentStateDistrictsHashMap.entrySet()) {
 						String districtName = map.getKey();
 						int value = map.getValue();
+
+						DistrictDatum districtDatumObject = new DistrictDatum();
+						districtDatumObject.setDistrict(districtName);
+						districtDatumObject.setConfirmed(value);
+
 						count += value;
 						System.out.println(districtName + " " + value);
+
+						districtDatumList.add(districtDatumObject);
 					}
 				}
 			}
 			if (count != Integer.parseInt(stateWiseObject.getConfirmed()) && !stateWiseObject.getState().equalsIgnoreCase("Total")) {
 				int unknown = Integer.parseInt(stateWiseObject.getConfirmed()) - count;
+				DistrictDatum districtDatumObject = new DistrictDatum();
+				districtDatumObject.setDistrict("Unknown");
+				districtDatumObject.setConfirmed(unknown);
+				districtDatumList.add(districtDatumObject);
 				districtNamesHashMap.put(stateWiseObject.getState() + "Unknown", unknown);
 				System.out.println("Unknown" + " " + unknown);
 			}
+			districtWiseObject.setDistrictData(districtDatumList);
+			districtWiseList.add(districtWiseObject);
 		}
+		System.out.println();
+		//printData(districtWiseList);
 		return data;
 	}
 
@@ -142,6 +167,16 @@ public class Main {
 			temp.put(aa.getKey(), aa.getValue());
 		}
 		return temp;
+	}
+
+	public static void printData(List<DistrictWise> districtWiseList) {
+		for (DistrictWise districtWiseObject: districtWiseList) {
+			System.out.println("State " + districtWiseObject.getState());
+			List<DistrictDatum> districtDatumList = districtWiseObject.getDistrictData();
+			for (DistrictDatum districtDatumObject: districtDatumList) {
+				System.out.println(districtDatumObject.getDistrict() + " " + districtDatumObject.getConfirmed());
+			}
+		}
 	}
 
 	public static void main(String[] args) throws Exception {
