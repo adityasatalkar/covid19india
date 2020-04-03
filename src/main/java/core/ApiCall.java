@@ -8,6 +8,7 @@ public class ApiCall {
 
     public static final String RAW_DATA_URL = "https://api.covid19india.org/raw_data.json";
     public static final String STATE_DISTRICT_WISE_URL = "https://api.covid19india.org/state_district_wise.json";
+    public static final String STATE_DISTRICT_WISE_V2_URL = "https://api.covid19india.org/v2/state_district_wise.json";
     public static final String DATA_URL = "https://api.covid19india.org/data.json";
 
     public static String getDataFromApi(String urlString) throws Exception {
