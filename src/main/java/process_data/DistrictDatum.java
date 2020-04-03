@@ -3,6 +3,8 @@ package process_data;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Comparator;
+
 public class DistrictDatum {
 
 	@SerializedName("district")
@@ -49,4 +51,15 @@ public class DistrictDatum {
 	public void setDelta(Delta delta) {
 		this.delta = delta;
 	}
+
+	public static Comparator<DistrictDatum> DistrictConfirmedComparatorDescendingOrder = new Comparator<DistrictDatum>() {
+
+		public int compare(DistrictDatum districtDatum1, DistrictDatum districtDatum2) {
+			Integer confirmed1 = districtDatum1.getConfirmed();
+			Integer confirmed2 = districtDatum2.getConfirmed();
+
+			//descending order
+			return confirmed2 - confirmed1;
+		}
+	};
 }

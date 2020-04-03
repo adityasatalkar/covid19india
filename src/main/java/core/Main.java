@@ -4,10 +4,7 @@ import api.Data;
 import api.Statewise;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import process_data.DistrictDatum;
-import process_data.DistrictWise;
-import process_data.RawData;
-import process_data.RawDatum;
+import process_data.*;
 
 import java.util.*;
 
@@ -179,8 +176,43 @@ public class Main {
 		}
 	}
 
+	public static DistrictWise getDistrictWiseData(String state) {
+		try {
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			String jsonString = "{\"districtWise\":" + ApiCall.getDataFromApi(ApiCall.STATE_DISTRICT_WISE_V2_URL) + "}";
+
+			StateDistrictWise stateDistrictWise = gson.fromJson(jsonString, StateDistrictWise.class);
+			List<DistrictWise> districtWiseList = stateDistrictWise.getDistrictWise();
+			for (DistrictWise districtWiseObject: districtWiseList) {
+				if (districtWiseObject.getState().equalsIgnoreCase(state)) {
+					return districtWiseObject;
+				}
+				/*
+				System.out.println(districtWiseObject.getState());
+				List<DistrictDatum> districtDataList = districtWiseObject.getDistrictData();
+				Collections.sort(districtDataList, DistrictDatum.DistrictConfirmedComparatorDescendingOrder);
+				for (DistrictDatum districtDatumObject: districtDataList) {
+					System.out.println(districtDatumObject.getDistrict() + " " + districtDatumObject.getConfirmed());
+				}
+				System.out.println();
+				*/
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public static void main(String[] args) throws Exception {
-		getRawData();
+		//getRawData();
 		getData();
+		DistrictWise districtWiseObject = getDistrictWiseData("maharashtra");
+		System.out.println("State " + districtWiseObject.getState());
+		List<DistrictDatum> districtDataList = districtWiseObject.getDistrictData();
+		Collections.sort(districtDataList, DistrictDatum.DistrictConfirmedComparatorDescendingOrder);
+		for (DistrictDatum districtDatumObject: districtDataList) {
+			System.out.println(districtDatumObject.getDistrict() + " " + districtDatumObject.getConfirmed());
+		}
 	}
 }
